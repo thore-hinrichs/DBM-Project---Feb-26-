@@ -2,9 +2,9 @@
 
 Connects to your MySQL DB and runs the Assignment 6 transactions:
 
-1) Txn 1: SELECT from view `v_vehicle_latest_location` (filtered by zone_type) + INSERT Reservation
-2) Txn 2: UPDATE MaintenanceTicket to closed (fires your triggers)
-3) Txn 3: DELETE Reservation by (customer_id, vehicle_id, start_time, status)
+1) Feature 1: SELECT from view `v_vehicle_latest_location` (filtered by zone_type) + INSERT Reservation
+2) Feature 2: UPDATE MaintenanceTicket to closed (fires your triggers)
+3) Feature 3: DELETE Reservation by (customer_id, vehicle_id, start_time, status)
 
 ## Setup
 ```bash

@@ -2,14 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>CarSharing DB App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CarSharing — DB Transactions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   </head>
   <body>
-    <header class="container">
-      <h1>CarSharing Group 6 — DB Transactions</h1>
-      <p class="muted">Runs Assignment 6 transactions on your MySQL database.</p>
+    <header class="page-header">
+      <div class="container">
+        <h1>CarSharing</h1>
+        <p class="tagline">DB transactions · Group 6</p>
+      </div>
     </header>
 
     <main class="container">
@@ -26,8 +28,10 @@
       {% block content %}{% endblock %}
     </main>
 
-    <footer class="container muted">
-      <small>Configure DB credentials in <code>.env</code>.</small>
+    <footer class="page-footer">
+      <div class="container">
+        <small>Configure DB credentials in <code>.env</code>.</small>
+      </div>
     </footer>
   </body>
 </html>

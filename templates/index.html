@@ -1,26 +1,163 @@
 {% extends "layout.html" %}
 {% block content %}
 
+{% if txn2_proof %}
+<section class="card proof-card">
+  <h3 class="proof-title">Feature 2 — Data persistence &amp; trigger verification</h3>
+  <p class="muted">The following shows that the maintenance ticket was updated in the database and that the trigger ran (vehicle status updated).</p>
+  {% if txn2_proof.maintenance_ticket_after %}
+  <p><strong>Updated row in <code>MaintenanceTicket</code> (persisted):</strong></p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>{% for k in txn2_proof.maintenance_ticket_after.keys() %}<th>{{ k }}</th>{% endfor %}</tr></thead>
+      <tbody><tr>{% for v in txn2_proof.maintenance_ticket_after.values() %}<td>{{ v }}</td>{% endfor %}</tr></tbody>
+    </table>
+  </div>
+  {% endif %}
+  {% if txn2_proof.vehicle_status_after %}
+  <p><strong>Vehicle status after update (trigger effect):</strong> <code>{{ txn2_proof.vehicle_status_after }}</code></p>
+  {% endif %}
+  {% if txn2_proof.trigger_note %}
+  <p class="trigger-note"><strong>{{ txn2_proof.trigger_note }}</strong></p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if txn3_proof %}
+<section class="card proof-card">
+  <h3 class="proof-title">Feature 3 — Deletion verified</h3>
+  <p class="muted">The following shows the record that was removed and confirms it is no longer in the database.</p>
+  {% if txn3_proof.deleted_record %}
+  <p><strong>Deleted row (was in <code>Reservation</code>):</strong></p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>{% for k in txn3_proof.deleted_record.keys() %}<th>{{ k }}</th>{% endfor %}</tr></thead>
+      <tbody><tr>{% for v in txn3_proof.deleted_record.values() %}<td>{{ v }}</td>{% endfor %}</tr></tbody>
+    </table>
+  </div>
+  {% endif %}
+  {% if txn3_proof.verified_gone %}
+  <p class="trigger-note"><strong>Verified: this record no longer exists in the database.</strong></p>
+  {% endif %}
+</section>
+{% endif %}
+
 <section class="card">
-  <h2>Txn 1 — View + Insert Reservation</h2>
-  <form method="post" action="{{ url_for('txn1') }}" class="grid">
-    <label>Zone type<input name="zone_type" value="{{ zone_type }}" /></label>
-    <label>customer_id<input name="customer_id" type="number" required value="6" /></label>
-    <label>vehicle_id<input name="vehicle_id" type="number" required value="6" /></label>
-    <label>start_time<input name="start_time" required value="2026-02-13 10:00:00" /></label>
-    <label>end_time<input name="end_time" value="2026-02-13 11:00:00" /></label>
-    <label>status<input name="status" value="confirmed" /></label>
-    <label>placed_time<input name="placed_time" required value="2026-02-13 09:40:00" /></label>
-    <label>channel<input name="channel" value="app" /></label>
-    <label>promo_code<input name="promo_code" value="" /></label>
-    <label>assigned_at<input name="assigned_at" value="2026-02-13 09:45:00" /></label>
-    <label>pickup_condition<input name="pickup_condition" value="clean" /></label>
-    <label>pickup_odometer<input name="pickup_odometer" type="number" value="12000" /></label>
-    <button type="submit">Run Txn 1</button>
+  <h2><span class="badge">1</span> View + Insert Reservation</h2>
+  <form method="post" action="{{ url_for('feature1') }}" class="form-grid">
+    <div class="form-group">
+      <label for="txn1_zone_type">Zone type</label>
+      <select id="txn1_zone_type" name="zone_type">
+        {% for z in zone_types %}
+          <option value="{{ z }}" {{ 'selected' if z == zone_type else '' }}>{{ z }}</option>
+        {% endfor %}
+        {% if not zone_types %}
+          <option value="{{ zone_type }}" selected>{{ zone_type }}</option>
+        {% endif %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="txn1_customer_id">Customer</label>
+      {% if customers %}
+        <select id="txn1_customer_id" name="customer_id" required>
+          {% for c in customers %}
+            <option value="{{ c.customer_id }}">{{ c.customer_id }}</option>
+          {% endfor %}
+        </select>
+      {% else %}
+        <input id="txn1_customer_id" name="customer_id" type="number" required min="1" value="6" />
+      {% endif %}
+    </div>
+    <div class="form-group">
+      <label for="txn1_vehicle_id">Vehicle</label>
+      {% if latest %}
+        <select id="txn1_vehicle_id" name="vehicle_id" required>
+          {% for row in latest %}
+            <option value="{{ row.vehicle_id }}">{{ row.vehicle_id }}</option>
+          {% endfor %}
+        </select>
+      {% else %}
+        <input id="txn1_vehicle_id" name="vehicle_id" type="number" required min="1" value="6" />
+      {% endif %}
+    </div>
+    <div class="form-group">
+      <label for="txn1_start_time">Start time</label>
+      <input id="txn1_start_time" name="start_time" type="datetime-local" required value="2026-02-13T10:00" />
+    </div>
+    <div class="form-group">
+      <label for="txn1_end_time">End time</label>
+      <input id="txn1_end_time" name="end_time" type="datetime-local" value="2026-02-13T11:00" />
+    </div>
+    <div class="form-group">
+      <label for="txn1_status">Status</label>
+      <input id="txn1_status" name="status" value="confirmed" />
+    </div>
+    <div class="form-group">
+      <label for="txn1_placed_time">Placed time</label>
+      <input id="txn1_placed_time" name="placed_time" type="datetime-local" required value="2026-02-13T09:40" />
+    </div>
+    <div class="form-group">
+      <label for="txn1_channel">Channel</label>
+      <input id="txn1_channel" name="channel" value="app" />
+    </div>
+    <div class="form-group">
+      <label for="txn1_promo_code">Promo code</label>
+      <input id="txn1_promo_code" name="promo_code" value="" placeholder="Optional" />
+    </div>
+    <div class="form-group">
+      <label for="txn1_assigned_at">Assigned at</label>
+      <input id="txn1_assigned_at" name="assigned_at" type="datetime-local" value="2026-02-13T09:45" />
+    </div>
+    <div class="form-group">
+      <label for="txn1_pickup_condition">Pickup condition</label>
+      <input id="txn1_pickup_condition" name="pickup_condition" value="clean" />
+    </div>
+    <div class="form-group">
+      <label for="txn1_pickup_odometer">Pickup odometer</label>
+      <input id="txn1_pickup_odometer" name="pickup_odometer" type="number" min="0" value="12000" />
+    </div>
+    <div class="form-group form-actions">
+      <label>&nbsp;</label>
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" id="fill-demo-feature1">Fill demo data</button>
+        <button type="submit" class="btn">Run Feature 1</button>
+      </div>
+    </div>
   </form>
+
+  {% if txn1_inserted_record %}
+  <div class="proof-box">
+    <h3>Data persistence verified</h3>
+    <p class="muted">The record below was inserted and is now stored in the <code>Reservation</code> table.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>{% for k in txn1_inserted_record.keys() %}<th>{{ k }}</th>{% endfor %}</tr></thead>
+        <tbody><tr>{% for v in txn1_inserted_record.values() %}<td>{{ v }}</td>{% endfor %}</tr></tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if reservation_table %}
+  <h3>Table: Reservation</h3>
+  <p class="muted">Full table after insert (newest first).</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>{% for k in reservation_table[0].keys() %}<th>{{ k }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for row in reservation_table %}
+          <tr>{% for v in row.values() %}<td>{{ v }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
 
   <h3>View output: v_vehicle_latest_location</h3>
   {% if latest and latest|length > 0 %}
+    <p class="muted">Filtered by zone type.</p>
     <div class="tablewrap">
       <table>
         <thead>
@@ -36,30 +173,185 @@
       </table>
     </div>
   {% else %}
-    <p class="muted">No rows (or DB error). Try another zone_type or check DB connection.</p>
+    <p class="muted">No rows (or DB error). Try another zone type or check DB connection.</p>
   {% endif %}
 </section>
 
 <section class="card">
-  <h2>Txn 2 — Close Maintenance Ticket (fires trigger)</h2>
-  <form method="post" action="{{ url_for('txn2') }}" class="grid">
-    <label>vehicle_id<input name="vehicle_id" type="number" required value="10" /></label>
-    <label>ticket_no<input name="ticket_no" type="number" required value="1010" /></label>
-    <label>closed_at<input name="closed_at" value="2026-02-13 12:00:00" /></label>
-    <button type="submit">Run Txn 2</button>
+  <h2><span class="badge">2</span> Close Maintenance Ticket</h2>
+  <form method="post" action="{{ url_for('feature2') }}" class="form-grid">
+    <div class="form-group">
+      <label for="txn2_ticket">Open ticket</label>
+      <select id="txn2_ticket">
+        <option value="">— Select —</option>
+        {% for t in open_tickets %}
+          <option value="{{ t.vehicle_id }},{{ t.ticket_no }}">Vehicle {{ t.vehicle_id }}, ticket {{ t.ticket_no }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="txn2_vehicle_id">Vehicle ID</label>
+      <input id="txn2_vehicle_id" name="vehicle_id" type="number" required min="1" placeholder="e.g. 10" />
+    </div>
+    <div class="form-group">
+      <label for="txn2_ticket_no">Ticket number</label>
+      <input id="txn2_ticket_no" name="ticket_no" type="number" required min="1" placeholder="e.g. 1010" />
+    </div>
+    <div class="form-group">
+      <label for="txn2_closed_at">Closed at</label>
+      <input id="txn2_closed_at" name="closed_at" type="datetime-local" />
+    </div>
+    <div class="form-group">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn">Run Feature 2</button>
+    </div>
   </form>
   <p class="muted">If your trigger is set up, closing a ticket should set the vehicle status back to <code>available</code>.</p>
 </section>
 
 <section class="card">
-  <h2>Txn 3 — Delete Reservation</h2>
-  <form method="post" action="{{ url_for('txn3') }}" class="grid">
-    <label>customer_id<input name="customer_id" type="number" required value="6" /></label>
-    <label>vehicle_id<input name="vehicle_id" type="number" required value="6" /></label>
-    <label>start_time<input name="start_time" required value="2026-02-13 10:00:00" /></label>
-    <label>status<input name="status" value="confirmed" /></label>
-    <button type="submit">Run Txn 3</button>
+  <h2><span class="badge">3</span> Delete Reservation</h2>
+  <form method="post" action="{{ url_for('feature3') }}" class="form-grid">
+    <div class="form-group">
+      <label for="txn3_reservation">Pre-fill from reservation</label>
+      <select id="txn3_reservation">
+        <option value="">— Select —</option>
+        {% for r in reservations %}
+          <option value="{{ r.customer_id }}|{{ r.vehicle_id }}|{{ r.start_time }}|{{ r.status }}"
+                  data-customer-id="{{ r.customer_id }}"
+                  data-vehicle-id="{{ r.vehicle_id }}"
+                  data-start-time="{{ r.start_time }}"
+                  data-status="{{ r.status }}">
+            Customer {{ r.customer_id }}, vehicle {{ r.vehicle_id }}, {{ r.start_time }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="txn3_customer_id">Customer ID</label>
+      <input id="txn3_customer_id" name="customer_id" type="number" required min="1" value="6" />
+    </div>
+    <div class="form-group">
+      <label for="txn3_vehicle_id">Vehicle ID</label>
+      <input id="txn3_vehicle_id" name="vehicle_id" type="number" required min="1" value="6" />
+    </div>
+    <div class="form-group">
+      <label for="txn3_start_time">Start time</label>
+      <input id="txn3_start_time" name="start_time" type="datetime-local" required value="2026-02-13T10:00" />
+    </div>
+    <div class="form-group">
+      <label for="txn3_status">Status</label>
+      <input id="txn3_status" name="status" value="confirmed" />
+    </div>
+    <div class="form-group">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn">Run Feature 3</button>
+    </div>
   </form>
 </section>
+
+<script>
+(function() {
+  function pad(n) { return n < 10 ? '0' + n : n; }
+  function toDateTimeLocal(d) {
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function randInt(min, max) {
+    return min + Math.floor(Math.random() * (max - min + 1));
+  }
+  function randomOption(selectId) {
+    var el = document.getElementById(selectId);
+    if (!el || el.tagName !== 'SELECT' || el.options.length === 0) return;
+    var opts = el.options;
+    var idx = randInt(0, opts.length - 1);
+    el.selectedIndex = idx;
+  }
+
+  var fillBtn = document.getElementById('fill-demo-feature1');
+  if (fillBtn) {
+    fillBtn.addEventListener('click', function() {
+      var now = new Date();
+      var start = new Date(now.getTime() + randInt(1, 7) * 24 * 60 * 60 * 1000);
+      start.setHours(randInt(8, 18), randInt(0, 59), 0, 0);
+      var end = new Date(start.getTime() + 60 * 60 * 1000);
+      var placed = new Date(start.getTime() - 25 * 60 * 1000);
+      var assigned = new Date(start.getTime() - 10 * 60 * 1000);
+
+      randomOption('txn1_zone_type');
+      var cust = document.getElementById('txn1_customer_id');
+      if (cust) {
+        if (cust.tagName === 'SELECT' && cust.options.length > 0) {
+          cust.selectedIndex = randInt(0, cust.options.length - 1);
+        } else {
+          cust.value = randInt(1, 20);
+        }
+      }
+      var veh = document.getElementById('txn1_vehicle_id');
+      if (veh) {
+        if (veh.tagName === 'SELECT' && veh.options.length > 0) {
+          veh.selectedIndex = randInt(0, veh.options.length - 1);
+        } else {
+          veh.value = randInt(1, 20);
+        }
+      }
+
+      var startEl = document.getElementById('txn1_start_time');
+      var endEl = document.getElementById('txn1_end_time');
+      var placedEl = document.getElementById('txn1_placed_time');
+      var assignedEl = document.getElementById('txn1_assigned_at');
+      if (startEl) startEl.value = toDateTimeLocal(start);
+      if (endEl) endEl.value = toDateTimeLocal(end);
+      if (placedEl) placedEl.value = toDateTimeLocal(placed);
+      if (assignedEl) assignedEl.value = toDateTimeLocal(assigned);
+
+      var statusEl = document.getElementById('txn1_status');
+      var channelEl = document.getElementById('txn1_channel');
+      var promoEl = document.getElementById('txn1_promo_code');
+      var condEl = document.getElementById('txn1_pickup_condition');
+      var odoEl = document.getElementById('txn1_pickup_odometer');
+      if (statusEl) statusEl.value = 'confirmed';
+      if (channelEl) channelEl.value = ['app', 'web'][randInt(0, 1)];
+      if (promoEl) promoEl.value = randInt(0, 3) === 0 ? 'DEMO10' : '';
+      if (condEl) condEl.value = ['clean', 'good', 'excellent'][randInt(0, 2)];
+      if (odoEl) odoEl.value = randInt(5000, 45000);
+    });
+  }
+
+  var sel = document.getElementById('txn2_ticket');
+  var vid = document.getElementById('txn2_vehicle_id');
+  var tno = document.getElementById('txn2_ticket_no');
+  if (sel && vid && tno) {
+    sel.addEventListener('change', function() {
+      var v = this.value;
+      if (v) {
+        var parts = v.split(',');
+        vid.value = parts[0];
+        tno.value = parts[1];
+      }
+    });
+  }
+  var resSel = document.getElementById('txn3_reservation');
+  var cid = document.getElementById('txn3_customer_id');
+  var vid3 = document.getElementById('txn3_vehicle_id');
+  var st = document.getElementById('txn3_start_time');
+  var status = document.getElementById('txn3_status');
+  if (resSel && cid && vid3 && st && status) {
+    resSel.addEventListener('change', function() {
+      var opt = this.options[this.selectedIndex];
+      if (opt && opt.value) {
+        cid.value = opt.getAttribute('data-customer-id') || '';
+        vid3.value = opt.getAttribute('data-vehicle-id') || '';
+        var startTime = opt.getAttribute('data-start-time') || '';
+        if (startTime.length >= 16) {
+          st.value = startTime.substring(0, 16).replace(' ', 'T');
+        } else {
+          st.value = startTime;
+        }
+        status.value = opt.getAttribute('data-status') || 'confirmed';
+      }
+    });
+  }
+})();
+</script>
 
 {% endblock %}
