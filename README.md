@@ -8,7 +8,7 @@ Connects to your MySQL DB and runs the Assignment 6 transactions:
 
 ## Setup
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate   # macOS/Linux
 pip install -r requirements.txt
 cp .env.example .env
