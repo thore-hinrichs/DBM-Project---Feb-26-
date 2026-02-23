@@ -66,6 +66,7 @@ source .venv/bin/activate          # macOS/Linux
 # .venv\Scripts\activate           # Windows
 
 pip install -r requirements.txt
+```
 
 ---
 
@@ -83,11 +84,12 @@ DB_USER=root
 DB_PASSWORD=your_password
 DB_NAME=carsharing_group6_db
 FLASK_SECRET_KEY=dev-secret
+```
 
 ---
 
 ## 4) Start app
 
-1. run app.py
-2. open localhost link
-3. if the port is already in use (white screen), try to run different port (for e.g. flask --app app run --debug --port 5001)
+1. run app.py  
+2. open localhost link  
+3. if the port is already in use (white screen), try to run different port (for e.g. `flask --app app run --debug --port 5001`)
